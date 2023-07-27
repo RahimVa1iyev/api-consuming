@@ -17,31 +17,42 @@ namespace CourseApp.UI.Controllers
 
         public async Task<IActionResult> Index()
         {
-          
-                var token = Request.Cookies["admin_token"];
-                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
-                using (var response = await _client.GetAsync("students/all"))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-                        StudentVM vm = new StudentVM
-                        {
-                            Students = JsonConvert.DeserializeObject<List<StudentGetVM>>(content)
-                        };
-                        return View(vm);
 
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            var token = Request.Cookies["admin_token"];
+
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
+
+            using (var response = await _client.GetAsync("students/all"))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    StudentVM vm = new StudentVM
                     {
-                        return RedirectToAction("login", "account");
-                    }
+                        Students = JsonConvert.DeserializeObject<List<StudentGetVM>>(content)
+                    };
+                    return View(vm);
+
                 }
-            
+           
+            }
+
             return View("error");
         }
         public async Task<IActionResult> Create()
         {
+            var token = Request.Cookies["admin_token"];
+
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
+
             ViewBag.Groups = await _getGroups();
             return View();
         }
@@ -60,13 +71,11 @@ namespace CourseApp.UI.Controllers
             requestContent.Add(new StringContent(vm.GroupId.ToString()), "GroupId");
             requestContent.Add(new StringContent(vm.Point.ToString()), "Point");
             var fileContent = new StreamContent(vm.ImageFile.OpenReadStream());
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(vm.ImageFile.ContentType); 
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(vm.ImageFile.ContentType);
             requestContent.Add(fileContent, "ImageFile", vm.ImageFile.FileName);
 
 
-            var token = Request.Cookies["admin_token"];
-            _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
-            StringContent requestC = new StringContent(JsonConvert.SerializeObject(vm), System.Text.Encoding.UTF8, "application/json");
+         
 
             using (var response = await _client.PostAsync("students", requestContent))
             {
@@ -82,10 +91,7 @@ namespace CourseApp.UI.Controllers
 
                     return View();
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    return RedirectToAction("login", "account");
-                }
+               
             }
 
             return View("error");
@@ -96,39 +102,45 @@ namespace CourseApp.UI.Controllers
         {
 
             var token = Request.Cookies["admin_token"];
-            _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
+
 
             ViewBag.Groups = await _getGroups();
 
 
             using (var response = await _client.GetAsync($"students/{id}"))
+            {
+
+                if (response.IsSuccessStatusCode)
                 {
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        var vm = JsonConvert.DeserializeObject<StudentEditVM>(responseContent);
-                        return View(vm);
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        return RedirectToAction("login", "account");
-                    }
-
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var vm = JsonConvert.DeserializeObject<StudentEditVM>(responseContent);
+                    return View(vm);
                 }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return RedirectToAction("login", "account");
+                }
+
+            }
             return View("error");
-         
+
         }
         [HttpPost]
         public async Task<IActionResult> Edit(int id, StudentEditVM vm)
         {
-           
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Groups = await _getGroups();
 
                 return View(vm);
-                
+
             }
             MultipartFormDataContent requestContent = new MultipartFormDataContent();
 
@@ -136,7 +148,7 @@ namespace CourseApp.UI.Controllers
             requestContent.Add(new StringContent(vm.GroupId.ToString()), "GroupId");
             requestContent.Add(new StringContent(vm.Point.ToString()), "Point");
 
-            if (vm.ImageFile!=null)
+            if (vm.ImageFile != null)
             {
                 var fileContent = new StreamContent(vm.ImageFile.OpenReadStream());
                 fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(vm.ImageFile.ContentType);
@@ -144,9 +156,7 @@ namespace CourseApp.UI.Controllers
             }
 
 
-            var token = Request.Cookies["admin_token"];
-            _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
-            StringContent requestC = new StringContent(JsonConvert.SerializeObject(vm), System.Text.Encoding.UTF8, "application/json");
+           
 
             using (var response = await _client.PutAsync($"students/{id}", requestContent))
             {
@@ -172,26 +182,28 @@ namespace CourseApp.UI.Controllers
         }
         public async Task<IActionResult> Delete(int id)
         {
-          
-                var token = Request.Cookies["admin_token"];
-                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
-                using (var response = await _client.DeleteAsync($"students/{id}"))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return RedirectToAction("index");
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        return RedirectToAction("index");
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        return RedirectToAction("login", "account");
-                    }
 
+            var token = Request.Cookies["admin_token"];
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
+
+            using (var response = await _client.DeleteAsync($"students/{id}"))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("index");
                 }
-            
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    return RedirectToAction("index");
+                }
+              
+
+            }
+
             return View("error");
         }
 
