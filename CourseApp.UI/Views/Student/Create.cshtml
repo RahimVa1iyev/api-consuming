@@ -1,0 +1,41 @@
+﻿@using CourseApp.UI.ViewModel
+
+
+﻿@{
+    ViewData["Title"] = "Create";
+}
+@model StudentCreateVM
+<div class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-8">
+            <h2>Student Create</h2>
+        </div>
+        <div class="col-md-8">
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label asp-for="Fullname">Fullname</label>
+                    <input class="form-control" asp-for="Fullname">
+                    <span class="text-danger" asp-validation-for="Fullname"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="GroupId">Group</label>
+                    <select class="form-control" asp-for="GroupId" asp-items="new SelectList(ViewBag.Groups,nameof(GroupViewModelItem.Id),nameof(GroupViewModelItem.Name))">
+                      
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Point">Point</label>
+                    <input class="form-control" asp-for="Point">
+                    <span class="text-danger" asp-validation-for="Point"></span>
+                </div>
+             
+                <div class="form-group">
+                    <label asp-for="ImageFile">ImageFile</label>
+                    <input class="form-control" asp-for="ImageFile">
+                    <span class="text-danger" asp-validation-for="ImageFile"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
