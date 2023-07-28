@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CourseApp.Data.Configurations
 {
-    internal class GroupConfiguration : IEntityTypeConfiguration<Group>
+    public class GroupConfiguration : IEntityTypeConfiguration<Group>
     {
         public void Configure(EntityTypeBuilder<Group> builder)
         {

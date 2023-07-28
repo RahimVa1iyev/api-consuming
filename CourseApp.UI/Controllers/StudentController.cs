@@ -59,11 +59,28 @@ namespace CourseApp.UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(StudentCreateVM vm)
         {
+            var token = Request.Cookies["admin_token"];
+
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Groups = await _getGroups();
                 return View();
             }
+
+            if (vm.ImageFile == null)
+            {
+                ModelState.AddModelError("ImageFile", "ImageFile is required");
+                ViewBag.Groups = await _getGroups();
+                return View();
+            }
+
+
 
             MultipartFormDataContent requestContent = new MultipartFormDataContent();
 
@@ -100,7 +117,6 @@ namespace CourseApp.UI.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-
             var token = Request.Cookies["admin_token"];
 
             if (token != null)
@@ -108,7 +124,6 @@ namespace CourseApp.UI.Controllers
                 _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
             else
                 return RedirectToAction("login", "account");
-
 
             ViewBag.Groups = await _getGroups();
 
@@ -134,6 +149,15 @@ namespace CourseApp.UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, StudentEditVM vm)
         {
+
+
+            var token =   Request.Cookies["admin_token"];
+
+            if (token != null)
+
+                _client.DefaultRequestHeaders.Add(Microsoft.Net.Http.Headers.HeaderNames.Authorization, token);
+            else
+                return RedirectToAction("login", "account");
 
             if (!ModelState.IsValid)
             {
